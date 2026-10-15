@@ -1,6 +1,5 @@
-// Haunted Night - simple Halloween p5.js sketch
+// Haunted Night
 
-// PASTE YOUR RAW GITHUB IMAGE LINK HERE
 const IMAGE_URL = "https://github.com/Aryan0766/sketch5/blob/66a0883fa1971c2ac9ef5d414de4b11a754a9048/hall.jpg";
 
 let img;
@@ -18,18 +17,18 @@ async function setup() {
 }
 
 function draw() {
-  // BACKGROUND color changes over time (purple <-> dark orange)
+  // BACKGROUND color changes over time
   let t = (sin(frameCount * 0.01) + 1) / 2;
   background(lerpColor(color(25, 10, 45), color(90, 30, 15), t));
 
-  // 1. MOON: grows and shrinks + color shifts
+  // 1. MOON grows and shrinks & color shifts
   let moonSize = 80 + sin(frameCount * 0.04) * 15;
   let moonColor = lerpColor(color(255, 245, 200), color(255, 180, 100), t);
   noStroke();
   fill(moonColor);
   circle(130, 120, moonSize);
 
-  // 2. GHOST: moves in a circle + fades in and out
+  // 2. GHOST moves in a circle & fades in and out
   let gx = 550 + cos(frameCount * 0.02) * 70;
   let gy = 250 + sin(frameCount * 0.02) * 40;
   let fade = map(sin(frameCount * 0.03), -1, 1, 60, 255);
@@ -44,7 +43,7 @@ function draw() {
   fill(10, 5, 15);
   rect(0, 500, width, 100);
 
-  // 3. PUMPKIN: eyes morph from circle to ellipse
+  // 3. PUMPKIN eyes morph from circle to ellipse
   fill(255, 140, 30);
   ellipse(300, 430, 140, 120);
   let eyeHeight = map(sin(frameCount * 0.05), -1, 1, 16, 34);
