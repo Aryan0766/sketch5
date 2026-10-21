@@ -1,62 +1,132 @@
-// Haunted Night
-
-const IMAGE_URL = "https://github.com/Aryan0766/sketch5/blob/66a0883fa1971c2ac9ef5d414de4b11a754a9048/hall.jpg";
+// Haunted Night 
+const IMAGE_URL = "hall.jpg";
 
 let img;
 let imgLoaded = false;
 
-// p5 2.x has no preload(); load assets with await inside an async setup()
-async function setup() {
+// background color (changes over time)
+let bgR = 25;
+let bgRSpeed = 0.3;
+
+// moon
+let moonSize = 70;
+let moonSpeed = 0.3;
+
+// ghost
+let ghostX = 450;
+let ghostSpeed = 2;
+let ghostAlpha = 255;
+let alphaSpeed = 2;
+
+// pumpkin eyes
+let eyeHeight = 16;
+let eyeSpeed = 0.4;
+
+// pumpkin loop movement
+let pumpkinX = 220;
+let pumpkinY = 360;
+let pumpkinSpeed = 2;
+let loopStep = 0;
+// 0 = right, 1 = down, 2 = left, 3 = up
+
+async function setup () {
   createCanvas(800, 600);
   try {
     img = await loadImage(IMAGE_URL);
     imgLoaded = true;
   } catch (e) {
-    imgLoaded = false; // keeps the placeholder box if the link is wrong
+    imgLoaded = false;
+    console.log("Image failed to load:", IMAGE_URL, e);
   }
 }
 
-function draw() {
-  // BACKGROUND color changes over time
-  let t = (sin(frameCount * 0.01) + 1) / 2;
-  background(lerpColor(color(25, 10, 45), color(90, 30, 15), t));
+function draw () {
+  // BACKGROUND color change
+  bgR = bgR + bgRSpeed;
+  if (bgR > 100 || bgR < 25) {
+    bgRSpeed = -bgRSpeed;
+  }
+  background(bgR, 10, 45);
 
-  // 1. MOON grows and shrinks & color shifts
-  let moonSize = 80 + sin(frameCount * 0.04) * 15;
-  let moonColor = lerpColor(color(255, 245, 200), color(255, 180, 100), t);
+  // 1. MOON grows and shrinks
+  moonSize = moonSize + moonSpeed;
+  if (moonSize > 100 || moonSize < 70) {
+    moonSpeed = -moonSpeed;
+  }
   noStroke();
-  fill(moonColor);
+  fill(255, 245, 200);
   circle(130, 120, moonSize);
 
-  // 2. GHOST moves in a circle & fades in and out
-  let gx = 550 + cos(frameCount * 0.02) * 70;
-  let gy = 250 + sin(frameCount * 0.02) * 40;
-  let fade = map(sin(frameCount * 0.03), -1, 1, 60, 255);
-  fill(255, fade);
-  arc(gx, gy, 70, 80, PI, TWO_PI);
-  rect(gx - 35, gy, 70, 45);
-  fill(20, fade);
-  circle(gx - 12, gy - 5, 10);
-  circle(gx + 12, gy - 5, 10);
+  // 2. GHOST: moves left and right + fades in and out
+  // AI CITATION: This ghost code (movement, fading, and drawing) was written
+  // with help from Claude
+  // I reviewed it and adjusted it for my sketch.
+  //
+  // HOW IT WORKS:
+  // - ghostX is the ghost's left/right position. Every frame, draw() adds
+  //   ghostSpeed to it, so the ghost slides across the screen.
+  // - When ghostX goes past 700 or below 400, ghostSpeed is flipped
+  //   (2 becomes -2), so the ghost turns around and moves the other way.
+  // - ghostAlpha is how see-through the ghost is (255 = solid, 60 = faint).
+  //   It changes by alphaSpeed each frame and flips direction at the limits,
+  //   so the ghost fades in and out.
+  // - The ghost is drawn with an arc for the head, a rect for the body,
+  //   and two small circles for the eyes. All use ghostX so they move together.
+  ghostX = ghostX + ghostSpeed;
+  if (ghostX > 700 || ghostX < 400) {
+    ghostSpeed = -ghostSpeed;
+  }
+  ghostAlpha = ghostAlpha + alphaSpeed;
+  if (ghostAlpha > 255 || ghostAlpha < 60) {
+    alphaSpeed = -alphaSpeed;
+  }
+  fill(255, ghostAlpha);
+  arc(ghostX, 250, 70, 80, PI, TWO_PI);
+  rect(ghostX - 35, 250, 70, 45);
+  fill(20, ghostAlpha);
+  circle(ghostX - 12, 245, 10);
+  circle(ghostX + 12, 245, 10);
 
   // ground
   fill(10, 5, 15);
   rect(0, 500, width, 100);
 
-  // 3. PUMPKIN eyes morph from circle to ellipse
+  // 3. PUMPKIN moves in a loop & eyes change shape and look side to side
+  // Loop path right along the top, down, left along the bottom, up
+  if (loopStep === 0) {
+    pumpkinX = pumpkinX + pumpkinSpeed;
+    if (pumpkinX >= 400) loopStep = 1;
+  } else if (loopStep === 1) {
+    pumpkinY = pumpkinY + pumpkinSpeed;
+    if (pumpkinY >= 440) loopStep = 2;
+  } else if (loopStep === 2) {
+    pumpkinX = pumpkinX - pumpkinSpeed;
+    if (pumpkinX <= 220) loopStep = 3;
+  } else {
+    pumpkinY = pumpkinY - pumpkinSpeed;
+    if (pumpkinY <= 360) loopStep = 0;
+  }
+
+  eyeHeight = eyeHeight + eyeSpeed;
+  if (eyeHeight > 34 || eyeHeight < 16) {
+    eyeSpeed = -eyeSpeed;
+  }
+
   fill(255, 140, 30);
-  ellipse(300, 430, 140, 120);
-  let eyeHeight = map(sin(frameCount * 0.05), -1, 1, 16, 34);
+  ellipse(pumpkinX, pumpkinY, 140, 120);
   fill(255, 230, 80);
-  ellipse(270, 415, 16, eyeHeight);
-  ellipse(330, 415, 16, eyeHeight);
-  triangle(300, 435, 292, 450, 308, 450);
-  rect(275, 465, 50, 10, 5);
+  ellipse(pumpkinX - 30, pumpkinY - 15, 16, eyeHeight);
+  ellipse(pumpkinX + 30, pumpkinY - 15, 16, eyeHeight);
+  fill(40, 20, 10);
+
+  fill(255, 230, 80);
+  triangle(pumpkinX, pumpkinY + 5, pumpkinX - 8, pumpkinY + 20, pumpkinX + 8, pumpkinY + 20);
+  rect(pumpkinX - 25, pumpkinY + 35, 50, 10, 5);
 
   // IMAGE from GitHub
   if (imgLoaded) {
     imageMode(CENTER);
-    image(img, 650, 430, 120, 120 * (img.height / img.width));
+    image(img, 650, 430, 320, 320 * (img.height / img.width));
   } else {
     fill(255, 60);
     rect(590, 370, 120, 120, 10);
